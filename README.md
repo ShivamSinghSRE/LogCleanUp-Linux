@@ -1,8 +1,8 @@
-# Cleanup Script
+# System Maintenance Script
 
 ## Overview
 
-`cleanup_script.sh` is a bash script designed to automate the cleanup of old log files and Elasticsearch indices. This script helps maintain a healthy disk space usage by deleting files and indices that are no longer needed.
+`maintenance_script.sh` is a comprehensive bash script designed to automate the maintenance of your system. It includes functionalities to clean up old log files, delete old Elasticsearch indices, log memory usage, and log disk usage.
 
 ## Features
 
@@ -11,6 +11,8 @@
 - Cleans up error and info subdirectories.
 - Deletes CSV files older than 45 days from a specified directory.
 - Deletes Elasticsearch indices older than 4 months.
+- Logs the top 10 processes by memory usage.
+- Logs the current disk usage.
 - Outputs the current disk space usage after the cleanup.
 
 ## Usage
@@ -78,7 +80,50 @@
     delete_old_indices
 
     echo "Log cleanup completed."
+    ```
 
+4. **Memory usage logging**:
+    ```bash
+    # Memory usage logging
+    memory_output_file="/home/fp_admin/memory_usage.log"
+
+    # Get the current date and time
+    current_date=$(date '+%Y-%m-%d %H:%M:%S')
+
+    # Get the top 10 processes by memory usage
+    memory_usage=$(ps aux --sort=-%mem | awk 'NR<=10{print $0}')
+
+    # Append the date and memory usage to the output file
+    echo "Date: $current_date" >> $memory_output_file
+    echo "$memory_usage" >> $memory_output_file
+    echo "----------------------------------------" >> $memory_output_file
+
+    echo "Memory usage log updated."
+    ```
+
+5. **Disk usage logging**:
+    ```bash
+    # Disk usage logging
+    disk_output_dir="/home/fp_admin/disk_logs"
+    disk_output_file="$disk_output_dir/disk_usage_$(date '+%Y-%m-%d').log"
+
+    # Create the output directory if it doesn't exist
+    mkdir -p $disk_output_dir
+
+    # Get the disk usage information
+    disk_usage=$(df -h)
+
+    # Write the date and disk usage to the output file
+    echo "Date: $current_date" > $disk_output_file
+    echo "$disk_usage" >> $disk_output_file
+    echo "----------------------------------------" >> $disk_output_file
+
+    # Print a message indicating where the log has been saved
+    echo "Disk usage log for $(date '+%Y-%m-%d') has been saved to $disk_output_file"
+    ```
+
+6. **Check disk space**:
+    ```bash
     # Check disk space
     echo "Checking disk space..."
     df -h
@@ -86,41 +131,46 @@
 
 ### Setting Up a Cron Job
 
-To automate the script execution, set up a cron job to run the script every Sunday.
+To automate the execution of this script, set up a cron job to run it at specified times.
 
-1. Open the crontab editor:
+1. **Open the crontab editor**:
     ```sh
     sudo crontab -e
     ```
 
-2. Add the following line to run the script every Sunday at midnight:
+2. **Add the following line to run the script**:
+
+    To run `maintenance_script.sh` every Sunday at midnight:
     ```sh
-    0 0 * * 0 /home/fp_admin/cleanup_script.sh
+    0 0 * * 0 /home/fp_admin/maintenance_script.sh
     ```
 
-3. Save and exit the editor.
+3. **Save and exit the editor**:
+    - If you’re using `vi` as the default editor, press `Esc`, then type `:wq` and hit `Enter`.
+    - If you’re using `nano`, press `Ctrl + X`, then `Y` to confirm changes, and `Enter` to save.
 
 Verify the cron job:
     ```sh
     sudo crontab -l
     ```
 
-You should see:
-    ```sh
-    0 0 * * 0 /home/fp_admin/cleanup_script.sh
-    ```
+## Contributing
+
+We welcome contributions to improve this script. Please follow these guidelines:
+
+1. **Fork the repository**.
+2. **Create a new branch** for your feature or bugfix.
+3. **Make your changes** with clear commit messages.
+4. **Submit a pull request** to the main branch with a detailed explanation of your changes.
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
-## Contributing
-
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
 
 ## Contact
 
-If you have any questions or suggestions, please feel free to contact the project maintainer.
+If you have any questions, feel free to open an issue or contact the project maintainer.
 
 ---
 
+**Note:** Ensure that your environment has the necessary permissions to perform file deletions and interact with Elasticsearch. Running these scripts as a user with insufficient permissions may result in errors.
